@@ -74,25 +74,38 @@ def save_config():
     temp.write_text(json.dumps(PRINTERS, ensure_ascii=False, indent=2), encoding='utf-8')
     temp.replace(CONFIG)
 
+def printer_address(value):
+    raw = str(value or '').strip()
+    if not raw:
+        return '', None
+    try:
+        url = urllib.parse.urlsplit(raw if '://' in raw else 'http://' + raw)
+        if url.scheme not in ('http', 'https') or url.username or url.password or url.query or url.fragment or url.path not in ('', '/'):
+            raise ValueError()
+        address = ipaddress.IPv4Address(url.hostname or '')
+        if not any(address in ipaddress.ip_network(n) for n in ('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16')):
+            raise ValueError()
+        port = url.port
+        if port is not None and port not in (80, 4408, 4409):
+            raise ValueError('Use a porta 80 (Creality), 4409 (Mainsail) ou 4408 (Fluidd).')
+        return str(address), port
+    except ValueError as error:
+        if str(error).startswith('Use a porta'):
+            raise
+        raise ValueError('Use um IP local, como 192.168.1.199, ou http://192.168.1.199:4409/. Não inclua caminhos adicionais.') from None
+
 def save_printer(data, printer_id=None):
     if not isinstance(data, dict):
         raise ValueError('Cadastro inválido.')
     name = str(data.get('name', '')).strip()
     model = data.get('model')
-    ip = str(data.get('ip', '')).strip()
+    ip, address_port = printer_address(data.get('ip', ''))
     serial = str(data.get('serial', '')).strip().upper()
     code = str(data.get('access_code', '')).strip()
     if not 1 <= len(name) <= 60:
         raise ValueError('Informe um nome com até 60 caracteres.')
     if model not in ('K1 Max', 'A1 mini'):
         raise ValueError('Modelo não suportado.')
-    if ip:
-        try:
-            addr = ipaddress.IPv4Address(ip)
-            if not any(addr in ipaddress.ip_network(n) for n in ('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16')):
-                raise ValueError()
-        except ValueError:
-            raise ValueError('Informe o endereço IPv4 da impressora na rede local.')
     if model == 'A1 mini' and ip and (not serial.isalnum() or not 6 <= len(serial) <= 64):
         raise ValueError('Informe o número de série da A1 mini.')
     if code and (len(code)>32 or not code.isascii()):
@@ -103,11 +116,12 @@ def save_printer(data, printer_id=None):
         old = next((p for p in PRINTERS if p['id'] == printer_id), None)
         if printer_id and not old:
             raise ValueError('Impressora não encontrada.')
-        control_port = int(data.get('control_port', (old or {}).get('control_port', 80)))
+        control_port = address_port or int(data.get('control_port', (old or {}).get('control_port', 4409)))
         if control_port not in (80, 4408, 4409):
             raise ValueError('Interface de controle inválida.')
-        if ip and any(p.get('ip') == ip and p['id'] != printer_id for p in PRINTERS):
-            raise ValueError('Este IP já está cadastrado em outra impressora.')
+        duplicate = next((p for p in PRINTERS if ip and p.get('ip') == ip and p['id'] != printer_id), None)
+        if duplicate:
+            raise ValueError('Este IP já está cadastrado em outra impressora: '+duplicate['name']+'. Edite esse cadastro.')
         if serial and model == 'A1 mini' and any(p.get('serial') == serial and p['id'] != printer_id for p in PRINTERS):
             raise ValueError('Este número de série já está cadastrado.')
         p = {**(old or {}), 'id':printer_id or uuid.uuid4().hex, 'name':name, 'model':model,

@@ -73,5 +73,14 @@ class RegistryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'busca'):
             server.save_printer({'name':'Test','model':'K1 Max'})
 
+    def test_accepts_lan_urls_and_keeps_interface_port(self):
+        pid=server.save_printer({'name':'Nova','model':'K1 Max','ip':' http://192.168.1.199:4409/ ','control_port':80})
+        self.assertEqual(server.PRINTERS[0]['ip'],'192.168.1.199')
+        self.assertEqual(server.PRINTERS[0]['control_port'],4409)
+        server.save_printer({'name':'Nova','model':'K1 Max','ip':'192.168.1.198:4408'},pid)
+        self.assertEqual(server.PRINTERS[0]['control_port'],4408)
+        for value in ('https://8.8.8.8','http://user:pass@192.168.1.1','http://192.168.1.1/path','192.168.1.1:7125','file://192.168.1.1','192.168.1.1?x=1'):
+            with self.assertRaises(ValueError): server.printer_address(value)
+
 if __name__ == '__main__':
     unittest.main()
