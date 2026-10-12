@@ -12,3 +12,7 @@ printer-secrets.json
 *.before-impacto.*
 *.zip
 .local/
+*.exe
+internet-state.json
+Endereco-internet.txt
+Primeiro-acesso.txt

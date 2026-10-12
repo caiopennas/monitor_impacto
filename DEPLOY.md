@@ -1,5 +1,21 @@
 # Disponibilizar o Monitor Impacto
 
+## Acesso inicial pelo notebook: HTTPS temporário
+
+`internet.py` supervisiona o painel autenticado e um Cloudflare Quick Tunnel. Não precisa de conta Cloudflare ou domínio. É uma opção de teste: o endereço muda a cada início, não tem garantia de disponibilidade e depende do notebook ligado, conectado à internet e à rede das impressoras.
+
+1. Instale o monitor e crie o administrador conforme o README.
+2. Baixe o executável Windows AMD64 do [cloudflared oficial](https://github.com/cloudflare/cloudflared/releases/latest) e salve como `%LOCALAPPDATA%\ImpactoMonitor\bin\cloudflared.exe`.
+3. Feche a instância anterior do Monitor Impacto (a porta 8130 deve estar livre).
+4. Execute `Iniciar Internet.cmd`. O supervisor inicia o servidor com a origem HTTPS exata, confirma o bloqueio dos dados sem login e salva o endereço em `%LOCALAPPDATA%\ImpactoMonitor\Endereco-internet.txt`.
+5. Abra esse endereço e entre na sua conta. Para encerrar, execute `Parar Internet.cmd`.
+
+Logs e estado ficam em `%LOCALAPPDATA%\ImpactoMonitor` (`tunnel.log`, `internet-server.log`, `internet-state.json`). Não inclua essa pasta no repositório. Se usar `IMPACTO_DATA_DIR`, a pasta do binário, logs e endereço acompanha essa configuração; o comando de parada Windows usa a pasta padrão.
+
+O supervisor encerra ambos os processos se um deles falhar. Não instala serviço nem inicialização automática do Windows. Após reiniciar o notebook, inicie o acesso novamente e consulte o novo endereço. Credenciais e cadastros continuam os mesmos. Câmeras e telemetria passam pelo painel; Mainsail/Creality continuam exigindo rede local ou VPN.
+
+Referência: [Cloudflare Quick Tunnels — limites e funcionamento](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/).
+
 ## Opção atual: escritório + Tailscale
 
 O computador do escritório executa este servidor, conectado às impressoras. Cada usuário remoto instala Tailscale e entra na rede privada autorizada. O login individual do aplicativo é uma camada adicional.
