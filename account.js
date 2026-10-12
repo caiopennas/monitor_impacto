@@ -26,7 +26,7 @@ if (el('userForm')) {
     el('actor').innerHTML='<option value="">Todos</option>'+users.map(u=>`<option value="${safe(u.username)}">${safe(u.username)}</option>`).join('');
     el('actor').value=actor;
   }
-  const labels={'login':'Entrada','logout':'Saída','painel.aberto':'Abriu o painel','usuario.criado':'Criou usuário','usuario.atualizado':'Alterou usuário / revogou sessões','senha.alterada':'Alterou a própria senha','impressora.salvar':'Salvou cadastro de impressora','rede.buscar':'Solicitou busca na rede','bambu.abrir':'Solicitou abertura do Bambu Studio','interface.camera.ampliada':'Ampliou câmera (evento da interface)','acesso.recusado':'Acesso recusado'};
+  const labels={'impressoras.ordem':'Reorganizou as impressoras','login':'Entrada','logout':'Saída','painel.aberto':'Abriu o painel','usuario.criado':'Criou usuário','usuario.atualizado':'Alterou usuário / revogou sessões','senha.alterada':'Alterou a própria senha','impressora.salvar':'Salvou cadastro de impressora','rede.buscar':'Solicitou busca na rede','bambu.abrir':'Solicitou abertura do Bambu Studio','interface.camera.ampliada':'Ampliou câmera (evento da interface)','acesso.recusado':'Acesso recusado'};
   async function loadAudit(reset=true) {
     if(reset) before='';
     const rows=await request('/api/audit?actor='+encodeURIComponent(el('actor').value)+(before?'&before='+before:''));

@@ -359,6 +359,20 @@ def polling():
             list(pool.map(poll_k1, [p for p in printers if p['model'] == 'K1 Max']))
         time.sleep(10)
 
+def reorder_printers(ids):
+    with LOCK:
+        if SCANNING:
+            raise ValueError('Aguarde a busca na rede terminar.')
+        current = {p['id']: p for p in PRINTERS}
+        if (not isinstance(ids, list) or any(not isinstance(i, str) for i in ids)
+                or len(ids) != len(current) or len(set(ids)) != len(ids) or set(ids) != set(current)):
+            raise ValueError('A lista mudou. Atualize o painel e organize novamente.')
+        ordered = [current[i] for i in ids]
+        temp = CONFIG.with_suffix('.tmp')
+        temp.write_text(json.dumps(ordered, ensure_ascii=False, indent=2), encoding='utf-8')
+        temp.replace(CONFIG)
+        PRINTERS[:] = ordered
+
 def snapshot():
     with LOCK:
         result = []
@@ -413,6 +427,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 if not 0 < size <= 16_384:
                     raise ValueError('Cadastro inválido.')
                 data = json.loads(self.rfile.read(size))
+                if self.path == '/api/printers/order':
+                    if not isinstance(data, dict):
+                        raise ValueError('Ordem inválida.')
+                    reorder_printers(data.get('ids'))
+                    return self.reply({'ok':True})
                 printer_id = self.path.rsplit('/',1)[-1] if self.path != '/api/printers' else None
                 return self.reply({'ok':True, 'id':save_printer(data, printer_id)})
             except (ValueError, TypeError, UnicodeDecodeError) as e:

@@ -54,7 +54,7 @@ class AccessTests(unittest.TestCase):
         self.assertEqual(self.request('GET', '/api/printers', token=self.viewer_token)[0], 200)
         for path in ('/admin', '/api/users', '/api/audit'):
             self.assertEqual(self.request('GET', path, token=self.viewer_token)[0], 403)
-        for path in ('/api/users', '/api/printers', '/api/discover', '/api/bambu-studio'):
+        for path in ('/api/users', '/api/printers', '/api/discover', '/api/bambu-studio', '/api/printers/order'):
             self.assertEqual(self.request('POST', path, {}, self.viewer_token)[0], 403, path)
 
     def test_origin_host_and_cookie(self):

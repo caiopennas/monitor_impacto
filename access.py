@@ -142,7 +142,7 @@ def authenticated_handler(base, root):
                     return self.reply({'ok':True})
                 # Existing backend validates printer fields; record its actual HTTP result.
                 self.audit_actor = actor
-                self.audit_action = ('impressora.salvar' if self.path.startswith('/api/printers') else 'rede.buscar' if self.path == '/api/discover' else 'bambu.abrir' if self.path == '/api/bambu-studio' else None)
+                self.audit_action = ('impressoras.ordem' if self.path == '/api/printers/order' else 'impressora.salvar' if self.path.startswith('/api/printers') else 'rede.buscar' if self.path == '/api/discover' else 'bambu.abrir' if self.path == '/api/bambu-studio' else None)
                 return super().do_POST()
             except (ValueError, TypeError, UnicodeDecodeError) as error:
                 return self.reply({'error':str(error)}, status=400)

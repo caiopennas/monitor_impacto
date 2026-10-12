@@ -54,6 +54,20 @@ class RegistryTests(unittest.TestCase):
             (base/'remote-access.json').write_text(json.dumps({'tailscale_ipv4':'100.80.1.2'}), encoding='utf-8-sig')
             self.assertIn('100.80.1.2:8130', server.allowed_hosts())
 
+    def test_reorder_preserves_data_and_rejects_incomplete_lists(self):
+        a = server.save_printer({'name':'Primeira','model':'K1 Max','ip':'192.168.1.20'})
+        b = server.save_printer({'name':'Segunda','model':'A1 mini','ip':'192.168.1.21','serial':'0300TEST1234'})
+        old = {p['id']:dict(p) for p in server.PRINTERS}
+        server.reorder_printers([b,a])
+        saved = json.loads(server.CONFIG.read_text(encoding='utf-8'))
+        self.assertEqual([p['id'] for p in saved],[b,a])
+        self.assertEqual({p['id']:p for p in saved},old)
+        for ids in ([a], [a,a], [b,'unknown'], [a,{}], None):
+            with self.assertRaises(ValueError): server.reorder_printers(ids)
+        self.assertEqual([p['id'] for p in server.PRINTERS],[b,a])
+        server.SCANNING=True
+        with self.assertRaises(ValueError): server.reorder_printers([a,b])
+
     def test_scan_locks_configuration_changes(self):
         server.SCANNING = True
         with self.assertRaisesRegex(ValueError,'busca'):
