@@ -80,6 +80,11 @@ def main():
             while not STOP.exists():
                 if any(child.poll() is not None for child in children):
                     raise RuntimeError('Painel ou túnel encerrado. Inicie novamente para gerar um novo endereço.')
+                with (DATA/'tunnel.log').open('rb') as recent_log:
+                    recent_log.seek(max(0, recent_log.seek(0, 2)-8192))
+                    recent = recent_log.read().decode('utf-8', errors='replace')
+                if 'Unauthorized: Tunnel not found' in recent:
+                    raise RuntimeError('A Cloudflare invalidou o túnel temporário. Inicie novamente para gerar outro endereço.')
                 time.sleep(2)
     except Exception as error:
         STATE.write_text(json.dumps({'status':'error','message':str(error)}), encoding='utf-8')
