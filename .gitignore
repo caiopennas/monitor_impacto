@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+printers.json
+remote-access.json
+printer-secrets.json
+*.sqlite3*
+*.db*
+*.log
+.env
+.env.*
+*.before-impacto.*
+*.zip
+.local/
