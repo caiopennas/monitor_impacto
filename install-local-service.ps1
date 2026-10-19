@@ -35,7 +35,7 @@ try {
     $worker = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
     $workerPath = Join-Path $InstallRoot 'app\local_app.py'
     if (!$worker.CommandLine.Contains($workerPath)) { throw 'Nao foi possivel identificar o processo para testar recuperacao.' }
-    Stop-Process -Id $worker.ProcessId
+    Stop-Process -Id $worker.ProcessId -Force
     $recovered=$false
     for ($i=0;$i -lt 35;$i++) {
         Start-Sleep -Seconds 1
@@ -47,3 +47,4 @@ try {
     @{status='error';message=$_.Exception.Message;time=(Get-Date).ToString('o')} | ConvertTo-Json | Set-Content $log -Encoding UTF8
     exit 1
 }
+
