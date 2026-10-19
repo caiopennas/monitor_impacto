@@ -2,6 +2,8 @@
 
 Central de impressoras 3D com mosaico de câmeras, telemetria, cadastro de K1 Max e Bambu A1 mini, contas individuais e registro de atividades.
 
+**Instalação permanente na empresa:** veja [Impacto Local](LOCAL.md), com serviço Windows, servidor Waitress e reinício automático. Os comandos abaixo descrevem a execução manual original.
+
 ## Instalar no Windows
 
 1. Instale Python 3.12 com a opção de adicionar ao PATH.

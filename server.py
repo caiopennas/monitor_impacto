@@ -23,13 +23,13 @@ ROOT = pathlib.Path(__file__).resolve().parent
 PORT = 8130
 LOCK = threading.RLock()
 SCAN_LOCK = threading.Lock()
-CONFIG = ROOT / 'printers.json'
+CONFIG = pathlib.Path(os.environ.get('IMPACTO_PRINTERS_FILE', str(ROOT / 'printers.json')))
 PRINTERS = json.loads(CONFIG.read_text(encoding='utf-8')) if CONFIG.exists() else []
 LIVE = {}
 SCANNING = False
 BAMBU_CLIENTS = {}
 CAMERAS = {}
-SECRETS = pathlib.Path(os.environ.get("LOCALAPPDATA", str(ROOT))) / "ImpactoMonitor" / "printer-secrets.json"
+SECRETS = pathlib.Path(os.environ.get('IMPACTO_DATA_DIR', str(pathlib.Path(os.environ.get('LOCALAPPDATA', str(ROOT))) / 'ImpactoMonitor'))) / 'printer-secrets.json'
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 def allowed_hosts():
